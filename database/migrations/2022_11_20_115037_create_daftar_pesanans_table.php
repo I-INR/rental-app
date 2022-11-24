@@ -19,7 +19,7 @@ class CreateDaftarPesanansTable extends Migration
             $table->integer('idKendaraan');
             $table->date('MulaiSewa');
             $table->date('BatasSewa');
-            $table->date('TotalTagihan');
+            $table->integer('TotalTagihan');
             $table->timestamps();
         });
     }

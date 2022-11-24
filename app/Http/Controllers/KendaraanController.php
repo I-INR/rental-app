@@ -55,7 +55,7 @@ class KendaraanController extends Controller
 
         $newkendaraan->JenisMobil = $request->JenisMobil;
         $newkendaraan->Deskripsi = $request->Deskripsi;
-        $newkendaraan->Kapasitas = $request->Kapasitas;
+        $newkendaraan->KapasitasTempatDuduk = $request->KapasitasTempatDuduk;
         $newkendaraan->Tersedia = $request->Tersedia ? $request->Tersedia : 1;
         $newkendaraan->HargaSewaPerHari = $request->HargaSewaPerHari;
 
@@ -126,9 +126,9 @@ class KendaraanController extends Controller
         $kendaraan->Deskripsi = $request->Deskripsi
             ? $request->Deskripsi
             : $kendaraan->Deskripsi;
-        $kendaraan->Kapasitas = $request->Kapasitas
-            ? $request->Kapasitas
-            : $kendaraan->Kapasitas;
+        $kendaraan->KapasitasTempatDuduk = $request->KapasitasTempatDuduk
+            ? $request->KapasitasTempatDuduk
+            : $kendaraan->KapasitasTempatDuduk;
         $kendaraan->Tersedia = $request->Tersedia
             ? $request->Tersedia
             : $kendaraan->Tersedia;

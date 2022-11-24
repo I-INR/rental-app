@@ -28,8 +28,19 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/kendaraan', [KendaraanController::class, 'index']);
 Route::get('/kendaraan/{id}', [KendaraanController::class, 'show']);
 
-Route::post('/kendaraan/add', [KendaraanController::class, 'store']);
-Route::post('/kendaraan/{id}/edit', [KendaraanController::class, 'update']);
-Route::post('/kendaraan/{id}/delete', [KendaraanController::class, 'destroy']);
+Route::middleware(['auth:sanctum'])->group(function () {
+    //USERS
+    Route::get('/pesananku', [PesananController::class, 'indexuser']);
+    Route::get('/pesananku/{id}', [PesananController::class, 'show']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/pesanan/add', [PesananController::class, 'store']);
+    Route::post('/pesanan/{id}/edit', [PesananController::class, 'update']);
+    Route::post('/pesanan/{id}/delete', [PesananController::class, 'destroy']);
 
+    //ADMIN
+    Route::post('/kendaraan/add', [KendaraanController::class, 'store']);
+    Route::post('/kendaraan/{id}/edit', [KendaraanController::class, 'update']);
+    Route::post('/kendaraan/{id}/delete', [KendaraanController::class,'destroy',]);
 
+    Route::get('/pesanan', [PesananController::class, 'index']);
+});

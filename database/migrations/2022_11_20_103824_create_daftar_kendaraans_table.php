@@ -17,11 +17,41 @@ class CreateDaftarKendaraansTable extends Migration
             $table->id();
             $table->string('JenisMobil');
             $table->longText('Deskripsi');
-            $table->integer('Kapasitas');
-            $table->boolean('Tersedia');
+            $table->integer('KapasitasTempatDuduk');
+            $table->integer('Tenaga');
+            $table->integer('KapasitasMesin');
+            $table->integer('KapasitasBahanBakar');
             $table->integer('HargaSewaPerHari');
+            $table->boolean('Tersedia');
             $table->timestamps();
         });
+
+        DB::table('daftar_kendaraans')->insert(
+            [
+                [
+                    'id' => 1,
+                    'JenisMobil' => 'Toyota Veloz',
+                    'Deskripsi' => 'Mantap',
+                    'KapasitasTempatDuduk' => 7,
+                    'Tenaga' => 95,
+                    'KapasitasMesin' => 1496,
+                    'KapasitasBahanBakar' => 43,
+                    'HargaSewaPerHari' => 300000,
+                    'Tersedia' => 1,
+                ],
+                [
+                    'id' => 2,
+                    'JenisMobil' => 'Honda Brio',
+                    'Deskripsi' => 'Mantap',
+                    'KapasitasTempatDuduk' => 5,
+                    'Tenaga' => 89,
+                    'KapasitasMesin' => 1199,
+                    'KapasitasBahanBakar' => 35,
+                    'HargaSewaPerHari' => 250000,
+                    'Tersedia' => 1,
+                ],
+            ]
+        );
     }
 
     /**
