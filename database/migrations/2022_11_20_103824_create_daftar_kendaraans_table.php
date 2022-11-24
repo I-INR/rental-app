@@ -15,11 +15,11 @@ class CreateDaftarKendaraansTable extends Migration
     {
         Schema::create('daftar_kendaraans', function (Blueprint $table) {
             $table->id();
-            $table->string('Jenis Mobil');
+            $table->string('JenisMobil');
             $table->longText('Deskripsi');
             $table->integer('Kapasitas');
             $table->boolean('Tersedia');
-            $table->integer('Harga Sewa/hari');
+            $table->integer('HargaSewaPerHari');
             $table->timestamps();
         });
     }
