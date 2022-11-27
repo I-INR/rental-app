@@ -22,36 +22,46 @@ class CreateDaftarKendaraansTable extends Migration
             $table->integer('KapasitasMesin');
             $table->integer('KapasitasBahanBakar');
             $table->integer('HargaSewaPerHari');
-            $table->boolean('Tersedia');
+            $table->boolean('Tersedia')->default(1);
+            $table->boolean('Status')->default(1);
             $table->timestamps();
         });
 
-        DB::table('daftar_kendaraans')->insert(
+        DB::table('daftar_kendaraans')->insert([
             [
-                [
-                    'id' => 1,
-                    'JenisMobil' => 'Toyota Veloz',
-                    'Deskripsi' => 'Mantap',
-                    'KapasitasTempatDuduk' => 7,
-                    'Tenaga' => 95,
-                    'KapasitasMesin' => 1496,
-                    'KapasitasBahanBakar' => 43,
-                    'HargaSewaPerHari' => 300000,
-                    'Tersedia' => 1,
-                ],
-                [
-                    'id' => 2,
-                    'JenisMobil' => 'Honda Brio',
-                    'Deskripsi' => 'Mantap',
-                    'KapasitasTempatDuduk' => 5,
-                    'Tenaga' => 89,
-                    'KapasitasMesin' => 1199,
-                    'KapasitasBahanBakar' => 35,
-                    'HargaSewaPerHari' => 250000,
-                    'Tersedia' => 1,
-                ],
-            ]
-        );
+                'id' => 1,
+                'JenisMobil' => 'Toyota Veloz',
+                'Deskripsi' => 'Mantap',
+                'KapasitasTempatDuduk' => 7,
+                'Tenaga' => 95,
+                'KapasitasMesin' => 1496,
+                'KapasitasBahanBakar' => 43,
+                'HargaSewaPerHari' => 300000,
+                'Tersedia' => 1,
+            ],
+            [
+                'id' => 2,
+                'JenisMobil' => 'Honda Brio',
+                'Deskripsi' => 'Mantap',
+                'KapasitasTempatDuduk' => 5,
+                'Tenaga' => 89,
+                'KapasitasMesin' => 1199,
+                'KapasitasBahanBakar' => 35,
+                'HargaSewaPerHari' => 250000,
+                'Tersedia' => 1,
+            ],
+            [
+                'id' => 3,
+                'JenisMobil' => 'Suzuki Ertiga',
+                'Deskripsi' => 'Mantap',
+                'KapasitasTempatDuduk' => 7,
+                'Tenaga' => 103,
+                'KapasitasMesin' => 1462,
+                'KapasitasBahanBakar' => 45,
+                'HargaSewaPerHari' => 310000,
+                'Tersedia' => 1,
+            ],
+        ]);
     }
 
     /**

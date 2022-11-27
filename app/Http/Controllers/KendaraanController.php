@@ -14,20 +14,22 @@ class KendaraanController extends Controller
      */
     public function index()
     {
-        $kendaraans = DaftarKendaraan::all();
+        $kendaraans = DaftarKendaraan::where('Status', 1)->get();
         $ringkasankendaraan = [];
 
         foreach ($kendaraans as $kendaraan) {
             $tampilkendaraan = new DaftarKendaraan();
+            $tampilkendaraan->id = $kendaraan->id;
             $tampilkendaraan->Jenis_Mobil = $kendaraan->JenisMobil;
             $tampilkendaraan->Deskripsi = $kendaraan->Deskripsi;
+            $tampilkendaraan->HargaSewaPerHari = $kendaraan->HargaSewaPerHari;
 
             array_push($ringkasankendaraan, $tampilkendaraan);
         }
 
         return response()->json(
             [
-                'success' => 200,
+                'status' => true,
                 'data' => $ringkasankendaraan,
             ],
             200
@@ -53,28 +55,54 @@ class KendaraanController extends Controller
     {
         $newkendaraan = new DaftarKendaraan();
 
+        $field = $request->validate([
+            'JenisMobil' => 'required|string',
+            'Deskripsi' => 'required|string',
+            'KapasitasTempatDuduk' => 'required|integer',
+            'Tenaga' => 'required|integer',
+            'KapasitasMesin' => 'required|integer',
+            'KapasitasBahanBakar' => 'required|integer',
+            'HargaSewaPerHari' => 'required|integer',
+            'Tersedia' => 'in:0,1',
+        ]);
+
         $newkendaraan->JenisMobil = $request->JenisMobil;
         $newkendaraan->Deskripsi = $request->Deskripsi;
         $newkendaraan->KapasitasTempatDuduk = $request->KapasitasTempatDuduk;
-        $newkendaraan->Tersedia = $request->Tersedia ? $request->Tersedia : 1;
+        $newkendaraan->Tenaga = $request->Tenaga;
+        $newkendaraan->KapasitasMesin = $request->KapasitasMesin;
+        $newkendaraan->KapasitasBahanBakar = $request->KapasitasBahanBakar;
         $newkendaraan->HargaSewaPerHari = $request->HargaSewaPerHari;
+        $newkendaraan->Tersedia =
+            $request->Tersedia != null ? $request->Tersedia : 1;
 
-        if ($newkendaraan->save()) {
-            return response()->json(
-                [
-                    'success' => 201,
-                    'messages' => 'data berhasil disimpan',
-                    'data' => $newkendaraan,
-                ],
-                201
-            );
+        if ($request->user()->role == 0) {
+            if ($newkendaraan->save()) {
+                return response()->json(
+                    [
+                        'status' => true,
+                        'messages' => 'data berhasil disimpan',
+                        'data' => $newkendaraan,
+                    ],
+                    201
+                );
+            } else {
+                return response()->json(
+                    [
+                        'status' => false,
+                        'messages' => 'data gagal disimpan',
+                    ],
+                    500
+                );
+            }
         } else {
             return response()->json(
                 [
-                    'success' => 400,
-                    'messages' => 'data gagal disimpan',
+                    'status' => false,
+                    'message' =>
+                        'Anda Tidak Memiliki Akses Terhadap Pesanan Ini',
                 ],
-                400
+                401
             );
         }
     }
@@ -88,10 +116,19 @@ class KendaraanController extends Controller
     public function show($id)
     {
         $kendaraan = DaftarKendaraan::find($id);
+        if (!$kendaraan || $kendaraan->Status == 0) {
+            return response()->json(
+                [
+                    'status' => false,
+                    'messages' => 'id Kendaraan ' . $id . ' tidak ditemukan',
+                ],
+                404
+            );
+        }
 
         return response()->json(
             [
-                'success' => 200,
+                'status' => true,
                 'data' => $kendaraan,
             ],
             200
@@ -119,39 +156,84 @@ class KendaraanController extends Controller
     public function update(Request $request, $id)
     {
         $kendaraan = DaftarKendaraan::find($id);
-
-        $kendaraan->JenisMobil = $request->JenisMobil
-            ? $request->JenisMobil
-            : $kendaraan->JenisMobil;
-        $kendaraan->Deskripsi = $request->Deskripsi
-            ? $request->Deskripsi
-            : $kendaraan->Deskripsi;
-        $kendaraan->KapasitasTempatDuduk = $request->KapasitasTempatDuduk
-            ? $request->KapasitasTempatDuduk
-            : $kendaraan->KapasitasTempatDuduk;
-        $kendaraan->Tersedia = $request->Tersedia
-            ? $request->Tersedia
-            : $kendaraan->Tersedia;
-        $kendaraan->HargaSewaPerHari = $request->HargaSewaPerHari
-            ? $request->HargaSewaPerHari
-            : $kendaraan->HargaSewaPerHari;
-
-        if ($kendaraan->save()) {
+        if (!$kendaraan || $kendaraan->Status == 0) {
             return response()->json(
                 [
-                    'success' => 200,
-                    'messages' => 'data berhasil diperbarui',
-                    'data' => $kendaraan,
+                    'status' => false,
+                    'messages' => 'id Kendaraan ' . $id . ' tidak ditemukan',
                 ],
-                200
+                404
             );
+        }
+        $field = $request->validate([
+            'JenisMobil' => 'string',
+            'Deskripsi' => 'string',
+            'KapasitasTempatDuduk' => 'integer',
+            'Tenaga' => 'integer',
+            'KapasitasMesin' => 'integer',
+            'KapasitasBahanBakar' => 'integer',
+            'HargaSewaPerHari' => 'integer',
+            'Tersedia' => 'in:0,1',
+        ]);
+
+        $kendaraan->JenisMobil =
+            $request->JenisMobil != null
+                ? $request->JenisMobil
+                : $kendaraan->JenisMobil;
+        $kendaraan->Deskripsi =
+            $request->Deskripsi != null
+                ? $request->Deskripsi
+                : $kendaraan->Deskripsi;
+        $kendaraan->KapasitasTempatDuduk =
+            $request->KapasitasTempatDuduk != null
+                ? $request->KapasitasTempatDuduk
+                : $kendaraan->KapasitasTempatDuduk;
+        $kendaraan->Tenaga =
+            $request->Tenaga != null ? $request->Tenaga : $kendaraan->Tenaga;
+        $kendaraan->KapasitasMesin =
+            $request->KapasitasMesin != null
+                ? $request->KapasitasMesin
+                : $kendaraan->KapasitasMesin;
+        $kendaraan->KapasitasBahanBakar =
+            $request->KapasitasBahanBakar != null
+                ? $request->KapasitasBahanBakar
+                : $kendaraan->KapasitasBahanBakar;
+        $kendaraan->HargaSewaPerHari =
+            $request->HargaSewaPerHari != null
+                ? $request->HargaSewaPerHari
+                : $kendaraan->HargaSewaPerHari;
+        $kendaraan->Tersedia =
+            $request->Tersedia != null
+                ? $request->Tersedia
+                : $kendaraan->Tersedia;
+
+        if ($request->user()->role == 0) {
+            if ($kendaraan->save()) {
+                return response()->json(
+                    [
+                        'status' => true,
+                        'messages' => 'data berhasil diperbarui',
+                        'data' => $kendaraan,
+                    ],
+                    200
+                );
+            } else {
+                return response()->json(
+                    [
+                        'status' => false,
+                        'messages' => 'data gagal diperbarui',
+                    ],
+                    500
+                );
+            }
         } else {
             return response()->json(
                 [
-                    'success' => 400,
-                    'messages' => 'data gagal diperbarui',
+                    'status' => false,
+                    'message' =>
+                        'Anda Tidak Memiliki Akses Terhadap Pesanan Ini',
                 ],
-                400
+                401
             );
         }
     }
@@ -162,26 +244,47 @@ class KendaraanController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $kendaraan = DaftarKendaraan::find($id);
-
-        if ($kendaraan->delete()) {
+        if (!$kendaraan || $kendaraan->Status == 0) {
             return response()->json(
                 [
-                    'success' => 200,
-                    'messages' => 'data berhasil dihapus',
-                    'data' => $kendaraan,
+                    'status' => false,
+                    'messages' => 'id kendaraan ' . $id . 'tidak ditemukan',
                 ],
-                200
+                404
             );
+        }
+
+        if ($request->user()->role == 0) {
+            $kendaraan->status = 0;
+            if ($kendaraan->save()) {
+                return response()->json(
+                    [
+                        'status' => true,
+                        'messages' => 'data berhasil dihapus',
+                        'data' => $kendaraan,
+                    ],
+                    200
+                );
+            } else {
+                return response()->json(
+                    [
+                        'status' => true,
+                        'messages' => 'data gagal dihapus',
+                    ],
+                    500
+                );
+            }
         } else {
             return response()->json(
                 [
-                    'success' => 400,
-                    'messages' => 'data gagal dihapus',
+                    'status' => false,
+                    'message' =>
+                        'Anda Tidak Memiliki Akses Terhadap Pesanan Ini',
                 ],
-                400
+                401
             );
         }
     }
