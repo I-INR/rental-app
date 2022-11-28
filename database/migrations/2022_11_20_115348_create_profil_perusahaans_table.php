@@ -21,6 +21,14 @@ class CreateProfilPerusahaansTable extends Migration
             $table->string('NoTelepon');
             $table->timestamps();
         });
+
+        DB::table('profil_perusahaans')->insert([
+            'id' => 1,
+            'namaPerusahaan' => 'IN-Rental',
+            'Alamat' => 'Purwokerto',
+            'AlamatEmail' => 'IN-Rental@gmail.com',
+            'NoTelepon' => '085292365482',
+        ]);
     }
 
     /**

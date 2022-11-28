@@ -17,22 +17,22 @@ use App\Http\Controllers\AuthController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 // public route
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/kendaraan', [KendaraanController::class, 'index']);
 Route::get('/kendaraan/{id}', [KendaraanController::class, 'show']);
+Route::get('/contactus', [AuthController::class, 'getcontact']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     //ADMIN
+    Route::post('/contactus/edit', [AuthController::class, 'updatecontact']);
     Route::post('/kendaraan/add', [KendaraanController::class, 'store']);
     Route::post('/kendaraan/{id}/edit', [KendaraanController::class, 'update']);
     Route::post('/kendaraan/{id}/delete', [KendaraanController::class,'destroy',]);
+    Route::post('/makeadmin', [AuthController::class,'makeadmin',]);
+    Route::get('/user', [AuthController::class,'index',]);
 
 
     //USERS
