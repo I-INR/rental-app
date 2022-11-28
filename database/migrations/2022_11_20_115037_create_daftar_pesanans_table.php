@@ -20,7 +20,8 @@ class CreateDaftarPesanansTable extends Migration
             $table->date('MulaiSewa');
             $table->date('BatasSewa');
             $table->integer('TotalTagihan');
-            $table->enum('Status', ['order', 'batal', 'kadaluarsa'])->default('order');
+            $table->enum('Status', ['order', 'batal', 'lunas'])->default('order');
+            $table->json('BuktiPembayaran')->nullable();
             $table->timestamps();
         });
     }

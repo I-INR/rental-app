@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KendaraanController;
 use App\Http\Controllers\PesananController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PembayaranController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +34,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/kendaraan/{id}/delete', [KendaraanController::class,'destroy',]);
     Route::post('/makeadmin', [AuthController::class,'makeadmin',]);
     Route::get('/user', [AuthController::class,'index',]);
+    Route::get('/bayar', [PembayaranController::class,'store',]);
 
 
     //USERS
