@@ -33,11 +33,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/kendaraan/add', [KendaraanController::class, 'store']);
     Route::post('/kendaraan/{id}/edit', [KendaraanController::class, 'update']);
     Route::post('/kendaraan/{id}/delete', [KendaraanController::class,'destroy',]);
-    Route::get('/pesanan', [PesananController::class, 'index']);
+
 
     //USERS
-    Route::get('/pesananku', [PesananController::class, 'indexuser']);
-    Route::get('/pesananku/{id}', [PesananController::class, 'show']);
+    Route::get('/pesanan', [PesananController::class, 'index']);
+    Route::get('/pesanan/{id}', [PesananController::class, 'show']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/pesanan/add', [PesananController::class, 'store']);
     Route::post('/pesanan/{id}/edit', [PesananController::class, 'update']);

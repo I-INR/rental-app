@@ -15,14 +15,22 @@ class PesananController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $allpesanan = DaftarPesanan::all();
+        $user = $request->user();
+
+        if ($user->role == 1) {
+            $allpesanan = DaftarPesanan::where('idPengguna', $user->id)->where('Status', '!=', 'batal')->get();
+        } else {
+            $allpesanan = DaftarPesanan::all();
+
+        }
 
         return response()->json(
             [
-                'success' => 200,
-                'data' => $allpesanan,
+                'status' => true,
+                'user' => $user,
+                'pesanan' => $allpesanan,
             ],
             200
         );
@@ -33,20 +41,8 @@ class PesananController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function indexuser(Request $request)
+    public function create()
     {
-        $user = $request->user();
-
-        $pesanan = DaftarPesanan::where('idPengguna', $user->id)->get();
-
-        return response()->json(
-            [
-                'success' => 200,
-                'user' => $user,
-                'riwayat pesanan' => $pesanan,
-            ],
-            200
-        );
     }
 
     /**
@@ -57,14 +53,39 @@ class PesananController extends Controller
      */
     public function store(Request $request)
     {
+        $field = $request->validate([
+            'idKendaraan' => 'required|integer',
+            'MulaiSewa' => 'required|date_format:Y-m-d',
+            'BatasSewa' => 'required|date_format:Y-m-d',
+        ]);
+
         $newpesanan = new DaftarPesanan();
         $kendaraan = DaftarKendaraan::find($request->idKendaraan);
+        if (!$kendaraan) {
+            return response()->json(
+                [
+                    'status' => true,
+                    'messages' => 'id kendaraan ' . $id . ' tidak ditemukan',
+                ],
+                404
+            );
+        }
 
         $tgl1 = new Carbon($request->MulaiSewa);
         $tgl2 = new Carbon($request->BatasSewa);
 
         $LamaPinjaman = $tgl2->diff($tgl1);
-        $TotalTagihan = ($LamaPinjaman->d + 1) * $kendaraan->HargaSewaPerHari;
+
+        if ($tgl2 <= $tgl1) {
+            return response()->json(
+                [
+                    'status' => false,
+                    'messages' => 'Batas Sewa tidak bisa sama atau sebelum ' . $tgl1 ,
+                ],
+                400
+            );
+        }
+        $TotalTagihan = ($LamaPinjaman->d += 1) * $kendaraan->HargaSewaPerHari;
 
         $newpesanan->idPengguna = $request->user()->id;
         $newpesanan->idKendaraan = $request->idKendaraan;
@@ -75,7 +96,7 @@ class PesananController extends Controller
         if ($kendaraan->Tersedia == 0) {
             return response()->json(
                 [
-                    'success' => 200,
+                    'status' => true,
                     'messages' => 'Kendaraan Tidak Tersedia untuk Saat Ini',
                 ],
                 200
@@ -86,7 +107,7 @@ class PesananController extends Controller
 
             return response()->json(
                 [
-                    'success' => 201,
+                    'status' => true,
                     'messages' => 'Pesanan berhasil ditambahkan',
                     'data' => $newpesanan,
                 ],
@@ -95,10 +116,10 @@ class PesananController extends Controller
         } else {
             return response()->json(
                 [
-                    'success' => 400,
+                    'status' => false,
                     'messages' => 'pesanan gagal ditambahkan',
                 ],
-                400
+                500
             );
         }
     }
@@ -112,6 +133,15 @@ class PesananController extends Controller
     public function show($id, Request $request)
     {
         $pesanan = DaftarPesanan::find($id);
+        if (!$pesanan) {
+            return response()->json(
+                [
+                    'status' => false,
+                    'messages' => 'id pesanan ' . $id . ' tidak ditemukan',
+                ],
+                404
+            );
+        }
 
         if (
             $request->user()->id == $pesanan->idPengguna ||
@@ -119,7 +149,7 @@ class PesananController extends Controller
         ) {
             return response()->json(
                 [
-                    'success' => 200,
+                    'staus' => true,
                     'data' => $pesanan,
                 ],
                 200
@@ -127,11 +157,11 @@ class PesananController extends Controller
         } else {
             return response()->json(
                 [
-                    'success' => 200,
+                    'status' => false,
                     'message' =>
                         'Anda Tidak Memiliki Akses Terhadap Pesanan Ini',
                 ],
-                200
+                401
             );
         }
     }
@@ -157,7 +187,26 @@ class PesananController extends Controller
     public function update(Request $request, $id)
     {
         $pesananku = DaftarPesanan::find($id);
+        if (!$pesananku) {
+            return response()->json(
+                [
+                    'status' => false,
+                    'messages' => 'id pesanan ' . $id . ' tidak ditemukan',
+                ],
+                404
+            );
+        }
+
         $kendaraan = DaftarKendaraan::find($request->idKendaraan);
+        if (!$kendaraan) {
+            return response()->json(
+                [
+                    'status' => false,
+                    'messages' => 'id kendaraan ' . $id . ' tidak ditemukan',
+                ],
+                404
+            );
+        }
         $idkendaraanLama = $pesananku->idKendaraan;
 
         $tgl1 = new Carbon(
@@ -166,6 +215,16 @@ class PesananController extends Controller
         $tgl2 = new Carbon(
             $request->BatasSewa ? $request->BatasSewa : $pesananku->BatasSewa
         );
+
+        if ($tgl2 <= $tgl1) {
+            return response()->json(
+                [
+                    'status' => false,
+                    'messages' => 'Batas Sewa tidak bisa sama atau sebelum ' . $tgl1 ,
+                ],
+                400
+            );
+        }
 
         $LamaPinjaman = $tgl2->diff($tgl1);
         $TotalTagihan = ($LamaPinjaman->d + 1) * $kendaraan->HargaSewaPerHari;
@@ -188,13 +247,24 @@ class PesananController extends Controller
         ) {
             return response()->json(
                 [
-                    'success' => 200,
+                    'status' => false,
                     'messages' => 'Kendaraan Tidak Tersedia untuk Saat Ini',
                 ],
-                200
+                401
             );
-        } elseif ($pesananku->save()) {
+        } elseif ($pesananku) {
+            $pesananku->save();
             $kendaraanlama = DaftarKendaraan::find($idkendaraanLama);
+            if (!$kendaraanlama) {
+                return response()->json(
+                    [
+                        'status' => false,
+                        'messages' =>
+                            'id kendaraan ' . $id . ' tidak ditemukan',
+                    ],
+                    404
+                );
+            }
             $kendaraanlama->Tersedia = 1;
             $kendaraanlama->save();
 
@@ -203,7 +273,7 @@ class PesananController extends Controller
 
             return response()->json(
                 [
-                    'success' => 201,
+                    'status' => true,
                     'messages' => 'Pesanan berhasil ditambahkan',
                     'data' => $pesananku,
                 ],
@@ -212,10 +282,10 @@ class PesananController extends Controller
         } else {
             return response()->json(
                 [
-                    'success' => 400,
+                    'status' => false,
                     'messages' => 'pesanan gagal ditambahkan',
                 ],
-                400
+                500
             );
         }
     }
@@ -229,15 +299,35 @@ class PesananController extends Controller
     public function destroy($id, Request $request)
     {
         $pesananku = DaftarPesanan::find($id);
-        $kendaraan = DaftarKendaraan::find($pesananku->idKendaraan);
+        if (!$pesananku) {
+            return response()->json(
+                [
+                    'status' => false,
+                    'messages' => 'id pesanan ' . $id . ' tidak ditemukan',
+                ],
+                404
+            );
+        }
 
-        if( $pesananku->idPengguna == $request->user()->id){
-            if ($pesananku->delete()) {
+        $kendaraan = DaftarKendaraan::find($pesananku->idKendaraan);
+        if (!$kendaraan) {
+            return response()->json(
+                [
+                    'status' => false,
+                    'messages' => 'id pesanan ' . $id . ' tidak ditemukan',
+                ],
+                404
+            );
+        }
+
+        if ($pesananku->idPengguna == $request->user()->id || $request->user()->role == 0) {
+            $pesananku->status = 'batal';
+            if ($pesananku->save()) {
                 $kendaraan->Tersedia = 1;
                 $kendaraan->save();
                 return response()->json(
                     [
-                        'success' => 200,
+                        'status' => true,
                         'messages' => 'data berhasil dihapus',
                         'data' => $pesananku,
                     ],
@@ -246,23 +336,21 @@ class PesananController extends Controller
             } else {
                 return response()->json(
                     [
-                        'success' => 400,
+                        'status' => false,
                         'messages' => 'data gagal dihapus',
                     ],
-                    400
+                    500
                 );
             }
-        }
-        else{
+        } else {
             return response()->json(
                 [
-                    'success' => 200,
+                    'status' => 401,
                     'message' =>
                         'Anda Tidak Memiliki Akses Terhadap Pesanan Ini',
                 ],
-                200
+                401
             );
         }
-
     }
 }
