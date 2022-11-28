@@ -33,8 +33,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/kendaraan/{id}/edit', [KendaraanController::class, 'update']);
     Route::post('/kendaraan/{id}/delete', [KendaraanController::class,'destroy',]);
     Route::post('/makeadmin', [AuthController::class,'makeadmin',]);
-    Route::get('/user', [AuthController::class,'index',]);
-    Route::get('/bayar', [PembayaranController::class,'store',]);
+    Route::get('/user', [AuthController::class,'user',]);
+    Route::post('/bayar', [PembayaranController::class,'store',]);
 
 
     //USERS
